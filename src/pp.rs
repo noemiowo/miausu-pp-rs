@@ -251,7 +251,7 @@ impl<'map> AnyPP<'map> {
     }
 
     
-
+}
 /// While generating remaining hitresults, decide how they should be distributed.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum HitResultPriority {
