@@ -450,8 +450,8 @@ impl<'map> From<OsuPP<'map>> for CatchPP<'map> {
             n100,
             n50,
             n_misses,
-            passed_objects,
             clock_rate,
+            passed_objects,
             ..
         } = osu;
 
@@ -464,13 +464,13 @@ impl<'map> From<OsuPP<'map>> for CatchPP<'map> {
             n_droplets: n100,
             n_tiny_droplets: n50,
             n_tiny_droplet_misses: None,
-            n_misses,
+            n_misses: Some(n_misses),
             passed_objects,
             clock_rate,
         };
 
         match acc {
-            Some(acc) => res.accuracy(acc),
+            Some(acc) => res.accuracy(acc.into())
             None => res,
         }
     }

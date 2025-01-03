@@ -40,22 +40,21 @@ use crate::{
 /// ```
 #[derive(Clone, Debug)]
 #[allow(clippy::upper_case_acronyms)]
-pub struct ManiaPP<'map> {
-    map: Cow<'map, Beatmap>,
-    attributes: Option<ManiaDifficultyAttributes>,
+pub struct OsuPP<'map> {
+    map: &'map Beatmap,
+    attributes: Option<OsuDifficultyAttributes>,
     mods: u32,
+    combo: Option<usize>,
+    acc: Option<f64>,
     passed_objects: Option<usize>,
-    clock_rate: Option<f64>,
-
+    clock_rate: f64, 
+    hitresult_priority: HitResultPriority, 
     pub(crate) n320: Option<usize>,
     pub(crate) n300: Option<usize>,
     pub(crate) n200: Option<usize>,
     pub(crate) n100: Option<usize>,
     pub(crate) n50: Option<usize>,
     pub(crate) n_misses: Option<usize>,
-
-    acc: Option<f64>,
-    hitresult_priority: Option<HitResultPriority>,
 }
 
 impl<'map> ManiaPP<'map> {
@@ -569,6 +568,8 @@ impl<'map> From<OsuPP<'map>> for ManiaPP<'map> {
         let OsuPP {
             map,
             attributes: _,
+            clock_rate,
+            hitresult_priority,
             mods,
             acc,
             combo: _,
@@ -577,8 +578,6 @@ impl<'map> From<OsuPP<'map>> for ManiaPP<'map> {
             n50,
             n_misses,
             passed_objects,
-            clock_rate,
-            hitresult_priority,
             ..
         } = osu;
 

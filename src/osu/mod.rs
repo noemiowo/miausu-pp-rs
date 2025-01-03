@@ -5,6 +5,7 @@ mod osu_object;
 mod pp;
 mod scaling_factor;
 mod skills;
+public mod stars
 
 use skills::OsuStrainSkill;
 

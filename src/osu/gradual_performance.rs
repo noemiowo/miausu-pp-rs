@@ -1,5 +1,4 @@
 use crate::{Beatmap, OsuPP};
-
 use super::{OsuGradualDifficultyAttributes, OsuPerformanceAttributes};
 
 /// Aggregation for a score's current state i.e. what was the
@@ -50,6 +49,15 @@ impl OsuScoreState {
     }
 }
 
+/// Trait for providing osu!standard difficulty attributes.
+pub trait OsuAttributeProvider {
+    fn get_aim(&self) -> f64;
+    fn get_speed(&self) -> f64;
+    fn get_overall_difficulty(&self) -> f64;
+    fn get_approach_rate(&self) -> f64;
+    fn get_max_combo(&self) -> usize;
+}
+
 /// Gradually calculate the performance attributes of an osu!standard map.
 ///
 /// After each hit object you can call
@@ -63,79 +71,6 @@ impl OsuScoreState {
 ///
 /// If you only want to calculate difficulty attributes use
 /// [`OsuGradualDifficultyAttributes`](crate::osu::OsuGradualDifficultyAttributes) instead.
-///
-/// # Example
-///
-/// ```
-/// use rosu_pp::{Beatmap, osu::{OsuGradualPerformanceAttributes, OsuScoreState}};
-///
-/// # /*
-/// let map: Beatmap = ...
-/// # */
-/// # let map = Beatmap::default();
-///
-/// let mods = 64; // DT
-/// let mut gradual_perf = OsuGradualPerformanceAttributes::new(&map, mods);
-/// let mut state = OsuScoreState::new(); // empty state, everything is on 0.
-///
-/// // The first 10 hitresults are 300s and there are no sliders for additional combo
-/// for _ in 0..10 {
-///     state.n300 += 1;
-///     state.max_combo += 1;
-///
-///     # /*
-///     let performance = gradual_perf.process_next_object(state.clone()).unwrap();
-///     println!("PP: {}", performance.pp);
-///     # */
-///     # let _ = gradual_perf.process_next_object(state.clone());
-/// }
-///
-/// // Then comes a miss.
-/// // Note that state's max combo won't be incremented for
-/// // the next few objects because the combo is reset.
-/// state.n_misses += 1;
-/// # /*
-/// let performance = gradual_perf.process_next_object(state.clone()).unwrap();
-/// println!("PP: {}", performance.pp);
-/// # */
-/// # let _ = gradual_perf.process_next_object(state.clone());
-///
-/// // The next 10 objects will be a mixture of 300s, 100s, and 50s.
-/// // Notice how all 10 objects will be processed in one go.
-/// state.n300 += 2;
-/// state.n100 += 7;
-/// state.n50 += 1;
-/// # /*
-/// let performance = gradual_perf.process_next_n_objects(state.clone(), 10).unwrap();
-/// println!("PP: {}", performance.pp);
-/// # */
-/// # let _ = gradual_perf.process_next_n_objects(state.clone(), 10);
-///
-/// // Now comes another 300. Note that the max combo gets incremented again.
-/// state.n300 += 1;
-/// state.max_combo += 1;
-/// # /*
-/// let performance = gradual_perf.process_next_object(state.clone()).unwrap();
-/// println!("PP: {}", performance.pp);
-/// # */
-/// # let _ = gradual_perf.process_next_object(state.clone());
-///
-/// // Skip to the end
-/// # /*
-/// state.max_combo = ...
-/// state.n300 = ...
-/// state.n100 = ...
-/// state.n50 = ...
-/// state.n_misses = ...
-/// let final_performance = gradual_perf.process_next_n_objects(state.clone(), usize::MAX).unwrap();
-/// println!("PP: {}", performance.pp);
-/// # */
-/// # let _ = gradual_perf.process_next_n_objects(state.clone(), usize::MAX);
-///
-/// // Once the final performance was calculated,
-/// // attempting to process further objects will return `None`.
-/// assert!(gradual_perf.process_next_object(state).is_none());
-/// ```
 #[derive(Debug)]
 pub struct OsuGradualPerformanceAttributes<'map> {
     difficulty: OsuGradualDifficultyAttributes,
@@ -186,5 +121,49 @@ impl<'map> OsuGradualPerformanceAttributes<'map> {
             .calculate();
 
         Some(performance)
+    }
+}
+
+/// Struct representing osu!standard difficulty attributes.
+#[derive(Debug, Clone)]
+pub struct OsuDifficultyAttributes {
+    pub aim: f64,
+    pub speed: f64,
+    pub overall_difficulty: f64,
+    pub approach_rate: f64,
+    pub max_combo: usize,
+}
+
+/// Implement the OsuAttributeProvider trait for OsuDifficultyAttributes.
+impl OsuAttributeProvider for OsuDifficultyAttributes {
+    fn get_aim(&self) -> f64 {
+        self.aim
+    }
+
+    fn get_speed(&self) -> f64 {
+        self.speed
+    }
+
+    fn get_overall_difficulty(&self) -> f64 {
+        self.overall_difficulty
+    }
+
+    fn get_approach_rate(&self) -> f64 {
+        self.approach_rate
+    }
+
+    fn get_max_combo(&self) -> usize {
+        self.max_combo
+    }
+}
+
+/// Update the OsuPP struct to use the OsuAttributeProvider trait.
+impl<'m> OsuPP<'m> {
+    pub fn attributes<T: OsuAttributeProvider>(self, attributes: T) -> Self {
+        self.aim(attributes.get_aim())
+            .speed(attributes.get_speed())
+            .overall_difficulty(attributes.get_overall_difficulty())
+            .approach_rate(attributes.get_approach_rate())
+            .max_combo(attributes.get_max_combo())
     }
 }

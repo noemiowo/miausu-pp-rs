@@ -232,117 +232,48 @@ impl<'m> OsuPP<'m> {
 
     /// Returns an object which contains the pp and [`DifficultyAttributes`](crate::osu::DifficultyAttributes)
     /// containing stars and other attributes.
-    pub fn calculate(mut self) -> OsuPerformanceAttributes {
-        if self.attributes.is_none() {
-            let attributes = stars(self.map, self.mods, self.passed_objects);
-            self.attributes.replace(attributes);
-        }
-
-        // Make sure the hitresults and accuracy are set
-        self.assert_hitresults();
-
-        let total_hits = self.total_hits() as f32;
-        let multiplier = 1.09;
-
-        let effective_miss_count = self.calculate_effective_miss_count();
-
-
-        let mut aim_value = self.compute_aim_value(total_hits, effective_miss_count);
-        let speed_value = self.compute_speed_value(total_hits, effective_miss_count);
-        let acc_value = self.compute_accuracy_value(total_hits);
-
-        let mut acc_depression = 1.0;
-
-        let difficulty = self.attributes.as_ref().unwrap();
-        let streams_nerf =
-            ((difficulty.aim_strain / difficulty.speed_strain) * 100.0).round() / 100.0;
-
-        if streams_nerf < 1.09 {
-            let acc_factor = (1.0 - self.acc.unwrap()).abs();
-            acc_depression = (0.86 - acc_factor).max(0.5);
-
-            if acc_depression > 0.0 {
-                aim_value *= acc_depression;
-            }
-        }
-
-        let nodt_bonus = match !self.mods.change_speed() {
-            true => 1.02,
-            false => 1.0,
-        };
-
-        let mut pp = (aim_value.powf(1.185 * nodt_bonus)
-            + speed_value.powf(0.83 * acc_depression)
-            + acc_value.powf(1.14 * nodt_bonus))
-        .powf(1.0 / 1.1)
-            * multiplier;
-
-        if self.mods.dt() && self.mods.hr() {
-            pp *= 1.025;
-        }
-
-        if self.map.creator == "quantumvortex" || self.map.creator == "LaurKappita"{
-            pp *= 0.95;
-        }   
-        
-        if self.map.creator == "None1637" {
-            pp *= 0.682;
-        }
-
-
-        OsuPerformanceAttributes {
-            difficulty: self.attributes.unwrap(),
-            pp_acc: 0.0,
-            pp_aim: aim_value as f64,
-            pp_flashlight: 0.0,
-            pp_speed: speed_value as f64,
-            pp: pp as f64,
-            effective_miss_count: effective_miss_count as f64,
-        }
-    }
-
     fn compute_aim_value(&self, total_hits: f32, effective_miss_count: f32) -> f32 {
         let attributes = self.attributes.as_ref().unwrap();
-
+    
         // TD penalty
         let raw_aim = if self.mods.td() {
             attributes.aim_strain.powf(0.8) as f32
         } else {
             attributes.aim_strain as f32
         };
-
-        let mut aim_value = (5.0 * (raw_aim / 0.0675).max(1.0) - 4.0).powi(3) / 100_000.0;
-
+    
+        let mut aim_value = ((5.0f32 * (raw_aim / 0.0675f32).max(1.0f32)) - 4.0f32).powi(3) / 100_000.0f32;
+    
         // Longer maps are worth more
         let len_bonus = 0.88
             + 0.4 * (total_hits / 2000.0).min(1.0)
             + (total_hits > 2000.0) as u8 as f32 * 0.5 * (total_hits / 2000.0).log10();
         aim_value *= len_bonus;
-
+    
         // Penalize misses
         if effective_miss_count > 0.0 {
             let miss_penalty = self.calculate_miss_penalty(effective_miss_count);
             aim_value *= miss_penalty;
         }
-
+    
         // AR bonus
         let mut ar_factor = if attributes.ar > 10.33 {
             0.3 * (attributes.ar - 10.33)
         } else {
             0.0
         };
-
+    
         if attributes.ar < 8.0 {
             ar_factor = 0.025 * (8.0 - attributes.ar);
         }
-
+    
         aim_value *= 1.0 + ar_factor as f32 * len_bonus;
-
+    
         // HD bonus
         if self.mods.hd() {
             aim_value *= 1.0 + 0.05 * (11.0 - attributes.ar) as f32;
         }
-
+    
         // FL bonus
         if self.mods.fl() {
             aim_value *= 1.0
@@ -352,31 +283,30 @@ impl<'m> OsuPP<'m> {
                     * ((total_hits - 200.0) / 300.0).min(1.0)
                 + (total_hits > 500.0) as u8 as f32 * (total_hits - 500.0) / 1600.0;
         }
-
-        // ima put it here
-        if (attributes.cs as f32) > 5.5 {
-            let cs_factor = 0.6 - 0.2 * ((attributes.cs as f32) - 6.0 );
-            aim_value *= cs_factor.max(0.2);
+    
+        // CS penalty
+        if (attributes.cs as f32) > 8.0 {
+            let cs_factor: f32 = 0.6 - 0.2 * ((attributes.cs as f32) - 8.0);
+            aim_value *= cs_factor.max(0.2f32);
         }
-
+    
         // EZ bonus
         if self.mods.ez() {
             let mut base_buff = 1.08_f32;
-
+    
             if attributes.ar <= 8.0 {
                 base_buff += (7.0 - attributes.ar as f32) / 100.0;
             }
-
+    
             aim_value *= base_buff;
         }
-
+    
         // Scale with accuracy
         aim_value *= 0.3 + self.acc.unwrap() / 2.0;
         aim_value *= 0.95 + attributes.od as f32 * attributes.od as f32 / 1900.0;
-
+    
         aim_value
     }
-
     fn compute_speed_value(&self, total_hits: f32, effective_miss_count: f32) -> f32 {
         let attributes = self.attributes.as_ref().unwrap();
 
@@ -478,7 +408,7 @@ impl<'m> OsuPP<'m> {
 
     #[inline]
     fn calculate_effective_miss_count(&self) -> f32 {
-        let mut combo_based_miss_count = 0.0;
+        let mut combo_based_miss_count: f32 = 0.0;
 
         let attributes = self.attributes.as_ref().unwrap();
         let combo = self.combo.unwrap_or(attributes.max_combo) as f32;
