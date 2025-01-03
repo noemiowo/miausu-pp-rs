@@ -2,7 +2,7 @@
 name = "miausu-pp"
 version = "1.0.6"
 authors = ["MaxOhn <ohn.m@hotmail.de>", "tsunyoku <tsunyoku@gmail.com>", "9down <artemyakovle2.0@gmail.com>"]
-edition = "2025"
+edition = "2021"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/noemiowo/miausu-pp-rs"
