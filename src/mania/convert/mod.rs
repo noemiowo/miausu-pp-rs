@@ -57,7 +57,7 @@ pub fn convert(map: &mut Beatmap, mods: &GameMods) {
             HitObjectKind::Circle => {
                 compute_density(obj.start_time, &mut density);
 
-                let mut gen = HitObjectPatternGenerator::new(
+                let mut r#gen = HitObjectPatternGenerator::new(
                     &mut random,
                     obj,
                     sound,

@@ -869,7 +869,7 @@ impl OsuPerformanceInner<'_> {
             );
         }
 
-        let ar_factor = if self.mods.rx() {
+        let _ar_factor = if self.mods.rx() {
             0.0
         } else if self.attrs.ar > 10.33 {
             0.3 * (self.attrs.ar - 10.33)
@@ -989,7 +989,7 @@ impl OsuPerformanceInner<'_> {
         };
 
         // * Scale the speed value with accuracy and OD.
-        speed_value *= (1.1 + self.attrs.aim * self.attrs.combo / 190.0)
+        speed_value *= (1.1 + self.attrs.aim * self.attrs.speed_note_count / 190.0)
             * ((self.acc + relevant_acc) / 1.9).powf((13.5 - self.attrs.ar) / 1.9);
 
         // * Scale the speed value with # of 50s to punish doubletapping.

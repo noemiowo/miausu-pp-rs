@@ -21,13 +21,13 @@ impl<'map, M: IGameMode> MapOrAttrs<'map, M> {
             MapOrAttrs::Map(_) => {
                 *self = Self::Attrs(attrs);
 
-                let Self::Attrs(ref mut attrs) = self else {
+                let &mut Self::Attrs(ref mut attrs) = self else {
                     unreachable!()
                 };
 
                 attrs
             }
-            MapOrAttrs::Attrs(ref mut attrs) => attrs,
+            &mut MapOrAttrs::Attrs(ref mut attrs) => attrs,
         }
     }
 }
