@@ -599,7 +599,7 @@ mod test {
         let (map, attrs) = test_data();
         let max_combo = attrs.max_combo();
 
-        let state = OsuPP::new(&map)
+        let state = OsuPP::new(&map){
             .attributes(attrs)
             .combo(500)
             .n300(300)
@@ -607,6 +607,7 @@ mod test {
             .n_misses(2)
             .hitresult_priority(HitResultPriority::BestCase)
             .generate_hitresults(max_combo);
+        }    
 
         let expected = OsuScoreState {
             max_combo: 500,

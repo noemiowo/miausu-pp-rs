@@ -470,7 +470,7 @@ impl<'map> From<OsuPP<'map>> for CatchPP<'map> {
         };
 
         match acc {
-            Some(acc) => res.accuracy(acc.into())
+            Some(acc) => res.accuracy(acc.into()),
             None => res,
         }
     }
