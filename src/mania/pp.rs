@@ -565,7 +565,7 @@ impl ManiaPpInner {
 use crate::mania::pp::ManiaPP;
 
 impl<'map> From<OsuPP<'map>> for ManiaPP<'map> {
-}
+
     #[inline]
     fn from(osu: OsuPP<'map>) -> Self {
         let OsuPP {
