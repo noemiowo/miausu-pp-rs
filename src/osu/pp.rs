@@ -1,4 +1,4 @@
-use super::stars::{stars, OsuDifficultyAttributes, OsuPerformanceAttributes};
+use super::stars::{OsuDifficultyAttributes, OsuPerformanceAttributes};
 use crate::{Beatmap, Mods};
 
 /// Calculator for pp on osu!standard maps.

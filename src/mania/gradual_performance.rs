@@ -1,3 +1,4 @@
+mut ManiaPP;
 use crate::{Beatmap, ManiaPP};
 
 use super::{ManiaGradualDifficultyAttributes, ManiaPerformanceAttributes};

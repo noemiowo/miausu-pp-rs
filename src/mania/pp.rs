@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use super::{ManiaDifficultyAttributes, ManiaPerformanceAttributes, ManiaScoreState, ManiaStars};
 use crate::{
-    Beatmap, DifficultyAttributes, GameMode, HitResultPriority, Mods, OsuPP, PerformanceAttributes,
+    Beatmap, DifficultyAttributes, GameMode, HitResultPriority, Mods, OsuPP as OtherOsuPP, PerformanceAttributes,
 };
 
 /// Performance calculator on osu!mania maps.
