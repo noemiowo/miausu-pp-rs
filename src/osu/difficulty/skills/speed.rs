@@ -71,7 +71,7 @@ impl Speed {
             .filter(|&n| n > 0.0)
             .map_or(0.0, |max_strain| {
                 self.inner.object_strains.iter().fold(0.0, |sum, strain| {
-                    sum + (1.0 + (-(strain / max_strain * 12.0 - 6.0)).exp()).recip()
+                    sum + (1.3 + (-(strain / max_strain * 12.2 - 6.0)).exp()).recip()
                 })
             })
     }
@@ -145,10 +145,10 @@ impl<'a> Skill<'a, Speed> {
 struct SpeedEvaluator;
 
 impl SpeedEvaluator {
-    const SINGLE_SPACING_THRESHOLD: f64 = 125.0; // 1.25 circlers distance between centers
-    const MIN_SPEED_BONUS: f64 = 75.0; // ~200BPM
-    const SPEED_BALANCING_FACTOR: f64 = 40.0;
-    const DIST_MULTIPLIER: f64 = 0.94;
+    const SINGLE_SPACING_THRESHOLD: f64 = 155.0; // 1.25 circlers distance between centers
+    const MIN_SPEED_BONUS: f64 = 100.0; // ~200BPM
+    const SPEED_BALANCING_FACTOR: f64 = 40.6;
+    const DIST_MULTIPLIER: f64 = 0.93;
 
     fn evaluate_diff_of<'a>(
         curr: &'a OsuDifficultyObject<'a>,
@@ -199,7 +199,7 @@ impl SpeedEvaluator {
         let dist_bonus = (dist / Self::SINGLE_SPACING_THRESHOLD).powf(3.95) * Self::DIST_MULTIPLIER;
 
         // * Base difficulty with all bonuses
-        let difficulty = (1.0 + speed_bonus + dist_bonus) * 1000.0 / strain_time;
+        let difficulty = (1.0 + speed_bonus + dist_bonus) * 1000.0 / strain_time * 1.4;
 
         // * Apply penalty if there's doubletappable doubles
         difficulty * doubletapness
@@ -378,13 +378,13 @@ impl RhythmEvaluator {
 
                     // * bpm change is into slider, this is easy acc window
                     if curr_obj.base.is_slider() {
-                        effective_ratio *= 0.6;
+                        effective_ratio *= 0.8;
                     }
 
                     // * bpm change was from a slider, this is easier typically than circle -> circle
                     // * unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
                     if prev_obj.base.is_slider() {
-                        effective_ratio *= 0.6;
+                        effective_ratio *= 0.8;
                     }
 
                     start_ratio = effective_ratio;
@@ -398,7 +398,7 @@ impl RhythmEvaluator {
         }
 
         // * produces multiplier that can be applied to strain. range [1, infinity) (not really though)
-        (4.0 + rhythm_complexity_sum * Self::RHYTHM_OVERALL_MULTIPLIER).sqrt() / 2.0
+        (4.0 + rhythm_complexity_sum * Self::RHYTHM_OVERALL_MULTIPLIER).sqrt() / 2.3
     }
 }
 

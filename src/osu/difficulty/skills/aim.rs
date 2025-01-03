@@ -11,8 +11,8 @@ use crate::{
 
 use super::strain::{DifficultyValue, OsuStrainSkill, UsedOsuStrainSkills};
 
-const SKILL_MULTIPLIER: f64 = 25.18;
-const STRAIN_DECAY_BASE: f64 = 0.15;
+const SKILL_MULTIPLIER: f64 = 26.18;
+const STRAIN_DECAY_BASE: f64 = 0.13;
 
 #[derive(Clone)]
 pub struct Aim {
@@ -113,10 +113,10 @@ impl<'a> Skill<'a, Aim> {
 struct AimEvaluator;
 
 impl AimEvaluator {
-    const WIDE_ANGLE_MULTIPLIER: f64 = 1.5;
-    const ACUTE_ANGLE_MULTIPLIER: f64 = 1.95;
-    const SLIDER_MULTIPLIER: f64 = 1.35;
-    const VELOCITY_CHANGE_MULTIPLIER: f64 = 0.75;
+    const WIDE_ANGLE_MULTIPLIER: f64 = 1.2;
+    const ACUTE_ANGLE_MULTIPLIER: f64 = 2.05;
+    const SLIDER_MULTIPLIER: f64 = 1.01;
+    const VELOCITY_CHANGE_MULTIPLIER: f64 = 0.8;
 
     fn evaluate_diff_of<'a>(
         curr: &'a OsuDifficultyObject<'a>,
@@ -159,7 +159,7 @@ impl AimEvaluator {
             prev_vel = prev_vel.max(movement_vel + travel_vel);
         }
 
-        let mut wide_angle_bonus = 0.0;
+        let mut wide_angle_bonus = 1.001;
         let mut acute_angle_bonus = 0.0;
         let mut slider_bonus = 0.0;
         let mut vel_change_bonus = 0.0;
@@ -169,7 +169,7 @@ impl AimEvaluator {
 
         // * If rhythms are the same.
         if osu_curr_obj.strain_time.max(osu_last_obj.strain_time)
-            < 1.25 * osu_curr_obj.strain_time.min(osu_last_obj.strain_time)
+            < 1.26 * osu_curr_obj.strain_time.min(osu_last_obj.strain_time)
         {
             if let Some(((curr_angle, last_angle), last_last_angle)) = osu_curr_obj
                 .angle
@@ -183,37 +183,37 @@ impl AimEvaluator {
                 acute_angle_bonus = Self::calc_acute_angle_bonus(curr_angle);
 
                 // * Only buff deltaTime exceeding 300 bpm 1/2.
-                if osu_curr_obj.strain_time > 100.0 {
+                if osu_curr_obj.strain_time > 150.0 {
                     acute_angle_bonus = 0.0;
                 } else {
                     let base1 =
-                        (FRAC_PI_2 * ((100.0 - osu_curr_obj.strain_time) / 25.0).min(1.0)).sin();
+                        (FRAC_PI_2 * ((110.0 - osu_curr_obj.strain_time) / 27.0).min(3.0)).sin();
 
                     let base2 = (FRAC_PI_2
-                        * ((osu_curr_obj.lazy_jump_dist).clamp(50.0, 100.0) - 50.0)
-                        / 50.0)
+                        * ((osu_curr_obj.lazy_jump_dist).clamp(70.0, 160.0) - 70.0)
+                        / 65.0)
                         .sin();
 
                     // * Multiply by previous angle, we don't want to buff unless this is a wiggle type pattern.
                     acute_angle_bonus *= Self::calc_acute_angle_bonus(last_angle)
                     // * The maximum velocity we buff is equal to 125 / strainTime
-                        * angle_bonus.min(125.0 / osu_curr_obj.strain_time)
+                        * angle_bonus.min(400.0 / osu_curr_obj.strain_time)
                         // * scale buff from 150 bpm 1/4 to 200 bpm 1/4
-                        * base1.powf(2.0)
+                        * base1.powf(1.2)
                          // * Buff distance exceeding 50 (radius) up to 100 (diameter).
-                        * base2.powf(2.0);
+                        * base2.powf(2.6);
                 }
 
                 // * Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
                 wide_angle_bonus *= angle_bonus
-                    * (1.0
-                        - wide_angle_bonus.min(Self::calc_wide_angle_bonus(last_angle).powf(3.0)));
+                    * (1.3
+                        - wide_angle_bonus.min(Self::calc_wide_angle_bonus(last_angle).powf(2.7)));
                 // * Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
-                acute_angle_bonus *= 0.5
-                    + 0.5
+                acute_angle_bonus *= 0.7
+                    + 0.7
                         * (1.0
                             - acute_angle_bonus
-                                .min(Self::calc_acute_angle_bonus(last_last_angle).powf(3.0)));
+                                .min(Self::calc_acute_angle_bonus(last_last_angle).powf(2.7)));
             }
         }
 
@@ -228,10 +228,10 @@ impl AimEvaluator {
             // * Scale with ratio of difference compared to 0.5 * max dist.
             let dist_ratio_base =
                 (FRAC_PI_2 * (prev_vel - curr_vel).abs() / prev_vel.max(curr_vel)).sin();
-            let dist_ratio = dist_ratio_base.powf(2.0);
+            let dist_ratio = dist_ratio_base.powf(2.3);
 
             // * Reward for % distance up to 125 / strainTime for overlaps where velocity is still changing.
-            let overlap_vel_buff = (125.0 / osu_curr_obj.strain_time.min(osu_last_obj.strain_time))
+            let overlap_vel_buff = (135.0 / osu_curr_obj.strain_time.min(osu_last_obj.strain_time))
                 .min((prev_vel - curr_vel).abs());
 
             vel_change_bonus = overlap_vel_buff * dist_ratio;
@@ -262,9 +262,9 @@ impl AimEvaluator {
     }
 
     fn calc_wide_angle_bonus(angle: f64) -> f64 {
-        (3.0 / 4.0 * ((5.0 / 6.0 * PI).min(angle.max(PI / 6.0)) - PI / 6.0))
+        (3.7 / 4.1 * ((4.8 / 5.77 * PI).min(angle.max(PI / 5.77)) - PI / 5.77))
             .sin()
-            .powf(2.0)
+            .powf(2.1)
     }
 
     fn calc_acute_angle_bonus(angle: f64) -> f64 {

@@ -880,7 +880,7 @@ impl OsuPerformanceInner<'_> {
         };
 
         // * Buff for longer maps with high AR.
-        aim_value *= 1.0 + ar_factor * len_bonus;
+        aim_value *= 1.1 * len_bonus;
 
         if self.mods.bl() {
             aim_value *= 1.3
@@ -923,7 +923,7 @@ impl OsuPerformanceInner<'_> {
 
         aim_value *= self.acc;
         // * It is important to consider accuracy difficulty when scaling with accuracy.
-        aim_value *= 0.98 + self.attrs.od.powf(2.0) / 2500.0;
+        aim_value *= 1 + self.attrs.od.powf(1.5) / 2515.0;
 
         aim_value
     }
@@ -937,9 +937,9 @@ impl OsuPerformanceInner<'_> {
 
         let total_hits = self.total_hits();
 
-        let len_bonus = 0.95
-            + 0.4 * (total_hits / 2000.0).min(1.0)
-            + f64::from(u8::from(total_hits > 2000.0)) * (total_hits / 2000.0).log10() * 0.5;
+        let len_bonus = 0.9
+            + 0.4 * (total_hits / 100.0).min(6.0)
+            + f64::from(u8::from(total_hits > 2000.0)) * (total_hits / 1300.0).log10() * 0.7;
 
         speed_value *= len_bonus;
 
@@ -959,16 +959,16 @@ impl OsuPerformanceInner<'_> {
         };
 
         // * Buff for longer maps with high AR.
-        speed_value *= 1.0 + ar_factor * len_bonus;
+        speed_value *= 1.1 * len_bonus;
 
         if self.mods.bl() {
             // * Increasing the speed value by object count for Blinds isn't
             // * ideal, so the minimum buff is given.
-            speed_value *= 1.12;
+            speed_value *= 1.15;
         } else if self.mods.hd() || self.mods.tc() {
             // * We want to give more reward for lower AR when it comes to aim and HD.
             // * This nerfs high AR and buffs lower AR.
-            speed_value *= 1.0 + 0.04 * (12.0 - self.attrs.ar);
+            speed_value *= 1.15 + 0.01 * (21 - self.attrs.ar);
         }
 
         // * Calculate accuracy assuming the worst case scenario
@@ -989,8 +989,8 @@ impl OsuPerformanceInner<'_> {
         };
 
         // * Scale the speed value with accuracy and OD.
-        speed_value *= (0.95 + self.attrs.od * self.attrs.od / 750.0)
-            * ((self.acc + relevant_acc) / 2.0).powf((14.5 - self.attrs.od) / 2.0);
+        speed_value *= (1.1 + self.attrs.aim * self.attrs.combo / 190.0)
+            * ((self.acc + relevant_acc) / 1.9).powf((13.5 - self.attrs.ar) / 1.9);
 
         // * Scale the speed value with # of 50s to punish doubletapping.
         speed_value *= 0.99_f64.powf(
@@ -1093,14 +1093,14 @@ impl OsuPerformanceInner<'_> {
     // * so we use the amount of relatively difficult sections to adjust miss penalty
     // * to make it more punishing on maps with lower amount of hard sections.
     fn calculate_miss_penalty(miss_count: f64, diff_strain_count: f64) -> f64 {
-        0.96 / ((miss_count / (4.0 * diff_strain_count.ln().powf(0.94))) + 1.0)
+        0.99 / ((miss_count / (4.3 * diff_strain_count.ln().powf(0.99))) + 0.8)
     }
 
     fn get_combo_scaling_factor(&self) -> f64 {
         if self.attrs.max_combo == 0 {
             1.0
         } else {
-            (f64::from(self.state.max_combo).powf(0.8) / f64::from(self.attrs.max_combo).powf(0.8))
+            (f64::from(self.state.max_combo).powf(0.8) / f64::from(self.attrs.max_combo).powf(0.75))
                 .min(1.0)
         }
     }

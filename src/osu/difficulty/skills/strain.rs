@@ -18,9 +18,9 @@ impl Default for OsuStrainSkill {
 
 impl OsuStrainSkill {
     pub const REDUCED_SECTION_COUNT: usize = 10;
-    pub const REDUCED_STRAIN_BASELINE: f64 = 0.75;
+    pub const REDUCED_STRAIN_BASELINE: f64 = 0.72;
 
-    pub const DECAY_WEIGHT: f64 = 0.9;
+    pub const DECAY_WEIGHT: f64 = 0.87;
     pub const SECTION_LEN: f64 = 400.0;
 
     pub fn save_curr_peak(&mut self) {
