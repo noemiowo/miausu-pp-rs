@@ -283,34 +283,12 @@ impl<'m> OsuPP<'m> {
 
         if self.map.creator == "quantumvortex" || self.map.creator == "LaurKappita"{
             pp *= 0.95;
-        }       
+        }   
+        
+        if self.map.creator == "None1637" {
+            pp *= 0.682;
+        }
 
-        pp *= match self.map.title.as_str() {
-
-            "sidetracked" => 0.6,
-
-            "Mario Paint (Time Regression Mix For BMS)" => 0.4,
-
-            "fiancailles" => 0.5,
-
-            _ => 1.0,
-        };
-
-        pp *= match self.map.beatmap_id {
-            // Glass Phantoms [Visage Effigy]
-            4127115 => 0.72,
-
-            // Chronostasis [A Brilliant Petal Frozen in an Everlasting Moment]
-            2874408 => 0.71,
-
-            // Tenbin no ue de [Last Fate]
-            4480795 => 0.82,
-
-            // sweet pie with raisins / REGGAETON BUT IT HAS AMEN BREAKS [tula improved]
-            2901666 => 0.792,
-
-            _ => 1.0,
-        };
 
         OsuPerformanceAttributes {
             difficulty: self.attributes.unwrap(),
@@ -377,7 +355,7 @@ impl<'m> OsuPP<'m> {
 
         // ima put it here
         if (attributes.cs as f32) > 5.5 {
-            let cs_factor = 0.6 - 0.2 * ((attributes.cs as f32) - 5.5);
+            let cs_factor = 0.6 - 0.2 * ((attributes.cs as f32) - 6.0 );
             aim_value *= cs_factor.max(0.2);
         }
 
@@ -394,7 +372,7 @@ impl<'m> OsuPP<'m> {
 
         // Scale with accuracy
         aim_value *= 0.3 + self.acc.unwrap() / 2.0;
-        aim_value *= 0.98 + attributes.od as f32 * attributes.od as f32 / 2500.0;
+        aim_value *= 0.95 + attributes.od as f32 * attributes.od as f32 / 1900.0;
 
         aim_value
     }
@@ -406,8 +384,8 @@ impl<'m> OsuPP<'m> {
             (5.0 * (attributes.speed_strain as f32 / 0.0675).max(1.0) - 4.0).powi(3) / 100_000.0;
 
         // Longer maps are worth more
-        let len_bonus = 0.88
-            + 0.4 * (total_hits / 2000.0).min(1.0)
+        let len_bonus = 0.83
+            + 0.5 * (total_hits / 2000.0).min(1.0)
             + (total_hits > 2000.0) as u8 as f32 * 0.5 * (total_hits / 2000.0).log10();
         speed_value *= len_bonus;
 
@@ -438,7 +416,7 @@ impl<'m> OsuPP<'m> {
         }
 
         // Scaling the speed value with accuracy and OD
-        speed_value *= (0.93 + attributes.od as f32 * attributes.od as f32 / 750.0)
+        speed_value *= (0.87 + attributes.od as f32 * attributes.od as f32 / 770.0)
             * self
                 .acc
                 .unwrap()
@@ -464,10 +442,10 @@ impl<'m> OsuPP<'m> {
                 .max(0.0);
 
         let mut acc_value =
-            1.52163_f32.powf(attributes.od as f32) * better_acc_percentage.powi(24) * 2.83;
+            1.52163_f32.powf(attributes.od as f32) * better_acc_percentage.powi(24) * 2.8;
 
         // Bonus for many hitcircles
-        acc_value *= ((n_circles as f32 / 1000.0).powf(0.3)).min(1.15);
+        acc_value *= ((n_circles as f32 / 1000.0).powf(0.3)).min(1.05);
 
         // HD bonus
         if self.mods.hd() {
